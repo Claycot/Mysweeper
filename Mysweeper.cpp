@@ -107,8 +107,8 @@ void setMine(char gameBoard[][22], char solnBoard[][22], int size)
 	srand(time(0));
 	for (int mine = 0; mine < numMines; mine++) {
 		do {
-			row = rand() % size;
-			col = rand() % size;
+			row = rand() % size + 1;
+			col = rand() % size + 1;
 		} while (solnBoard[row][col] == 'x' || solnBoard[row][col] == 's');
 		solnBoard[row][col] = 'x';
 	}
