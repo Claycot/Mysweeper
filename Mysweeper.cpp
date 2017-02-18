@@ -1,5 +1,5 @@
 // Mysweeper.cpp : Defines the entry point for the console application.
-//
+// Code by claycot
 
 #include <iostream>
 #include <string>
@@ -11,47 +11,52 @@
 
 using namespace std;
 
-//Controlling size of the array
-#define BOARD_SIZE BOARD_SIZE_VAR
-//Differentiating the ones that correspond with the array, but do not control the array
-#define BOARD_SIZE_VAR 9
-
 //Prototyping functions
-void initBoard(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size);
-void setMine(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size);
-void calcBoard(char solnBoard[][BOARD_SIZE], int size);
-void drawBoard(char board[][BOARD_SIZE], int size);
+void initBoard(char gameBoard[][22], char solnBoard[][22], int size);
+void setMine(char gameBoard[][22], char solnBoard[][22], int size);
+void calcBoard(char solnBoard[][22], int size);
+void drawBoard(char board[][22], int size);
 int drawMenu(string diffLev);
-void startGame(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size);
+void startGame(char gameBoard[][22], char solnBoard[][22], int size);
 void endGame(bool win);
 string setDiff();
-void makeMove(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size, bool firstMove);
+void makeMove(char gameBoard[][22], char solnBoard[][22], int size, bool firstMove);
 int letterToNumber(string letterIn);
 int verifyNumber(string numberIn);
-char numNeighboringMines(int row, int col, char solnBoard[][BOARD_SIZE], int size);
-bool checkWin(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size);
-bool checkLoss(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size);
-void cascadeZeroes(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size, int row, int col);
+char numNeighboringMines(int row, int col, char solnBoard[][22], int size);
+bool checkWin(char gameBoard[][22], char solnBoard[][22], int size);
+bool checkLoss(char gameBoard[][22], char solnBoard[][22], int size);
+void cascadeZeroes(char gameBoard[][22], char solnBoard[][22], int size, int row, int col);
 
 //Handles game action
 int main()
 {
-	char gameBoard[BOARD_SIZE][BOARD_SIZE];
-	char solnBoard[BOARD_SIZE][BOARD_SIZE];
+	char gameBoard[22][22];
+	char solnBoard[22][22];
 	string diffLev = "Beginner";
-
+	int size;
+	
 	//Start of the program.
 	cout << "Welcome to Mysweeper!\nThis is a text-based, C++ rendition of the Windows classic, Minesweeper!\n";
 
 	//Display the menu options and proceed based on user interaction.
 	for (;;) {
 		switch (drawMenu(diffLev)) {
-		case 1: startGame(gameBoard, solnBoard, BOARD_SIZE_VAR);
+		case 1: if (diffLev == "Beginner") {
+					size = 9;
+				}
+				else if (diffLev == "Intermediate") {
+					size = 16;
+				}
+				else if (diffLev == "Expert") {
+					size = 20;
+				}
+			startGame(gameBoard, solnBoard, size);
 			do {
-				drawBoard(gameBoard, BOARD_SIZE_VAR);
-				makeMove(gameBoard, solnBoard, BOARD_SIZE_VAR, false);
-			} while (!checkWin(gameBoard, solnBoard, BOARD_SIZE_VAR) && !checkLoss(gameBoard, solnBoard, BOARD_SIZE_VAR));
-			drawBoard(solnBoard, BOARD_SIZE_VAR);
+				drawBoard(gameBoard, size);
+				makeMove(gameBoard, solnBoard, size, false);
+			} while (!checkWin(gameBoard, solnBoard, size) && !checkLoss(gameBoard, solnBoard, size));
+			drawBoard(solnBoard, size);
 			cout << "Press enter to return to the main menu.\n";
 			cin.ignore();
 			break;
@@ -64,25 +69,23 @@ int main()
 }
 
 //Initialize both boards
-void initBoard(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size)
-{
-	int row, col;
-	
-	for (int row = 0; row < size; row++) {
-		for (int col = 0; col < size; col++) {
+void initBoard(char gameBoard[][22], char solnBoard[][22], int size)
+{	
+	for (int row = 0; row <= size; row++) {
+		for (int col = 0; col <= size; col++) {
 			gameBoard[row][col] = '?';
 		}
 	}
 
-	for (int row = 0; row < size; row++) {
-		for (int col = 0; col < size; col++) {
-			solnBoard[row][col] = '0';
+	for (int row = 0; row <= size; row++) {
+		for (int col = 0; col <= size; col++) {
+			solnBoard[row][col] = 'b';
 		}
 	}
 }
 
 //Set mines on the board.
-void setMine(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size)
+void setMine(char gameBoard[][22], char solnBoard[][22], int size)
 {
 	int row, col;
 	int numMines;
@@ -112,10 +115,10 @@ void setMine(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int siz
 }
 
 //Call neighboring mines function to populate board with numbers
-void calcBoard(char solnBoard[][BOARD_SIZE], int size)
+void calcBoard(char solnBoard[][22], int size)
 {
-	for (int row = 0; row < size; row++) {
-		for (int col = 0; col < size; col++) {
+	for (int row = 1; row <= size; row++) {
+		for (int col = 1; col <= size; col++) {
 			if (solnBoard[row][col] == 'x') {
 			}
 			else {
@@ -126,7 +129,7 @@ void calcBoard(char solnBoard[][BOARD_SIZE], int size)
 }
 
 //Draw whichever board is requested
-void drawBoard(char board[][BOARD_SIZE], int size)
+void drawBoard(char board[][22], int size)
 {
 	/*
 	CHARACTER CODE:
@@ -137,7 +140,6 @@ void drawBoard(char board[][BOARD_SIZE], int size)
 	1 - 8 = dangerous, uncovered space
 	*/
 
-	int row, col;
 	cout << endl;
 
 	//Change header depending on the size of the board
@@ -150,9 +152,9 @@ void drawBoard(char board[][BOARD_SIZE], int size)
 		break;
 	}
 
-	for (int row = 0; row < size; row++) {
-		cout << setw(2) << row + 1 << " | ";
-		for (int col = 0; col < size; col++) {
+	for (int row = 1; row <= size; row++) {
+		cout << setw(2) << row << " | ";
+		for (int col = 1; col <= size; col++) {
 			cout << board[row][col] << " ";
 		}
 		cout << endl;
@@ -184,14 +186,14 @@ int drawMenu(string diffLev)
 }
 
 //Collect function calls which are used at the start of the game
-void startGame(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size)
+void startGame(char gameBoard[][22], char solnBoard[][22], int size)
 {
 	//Initialize both boards
-	initBoard(gameBoard, solnBoard, BOARD_SIZE_VAR);
+	initBoard(gameBoard, solnBoard, size);
 	//Draw the game board
-	drawBoard(gameBoard, BOARD_SIZE_VAR);
+	drawBoard(gameBoard, size);
 	//Ask the user to make a move, use it to set mines
-	makeMove(gameBoard, solnBoard, BOARD_SIZE_VAR, true);
+	makeMove(gameBoard, solnBoard, size, true);
 }
 
 //Output message based on if winner has won or lost
@@ -245,7 +247,7 @@ string setDiff()
 }
 
 //Allow user to make a move
-void makeMove(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size, bool firstMove)
+void makeMove(char gameBoard[][22], char solnBoard[][22], int size, bool firstMove)
 {
 	string rawInput;
 	string cell;
@@ -288,17 +290,17 @@ void makeMove(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int si
 	
 	//Convert user input to cell data
 	rawRow = cell.substr(1);
-	row = verifyNumber(rawRow) - 1;
+	row = verifyNumber(rawRow);
 	rawCol = cell.substr(0, 1);
-	col = letterToNumber(rawCol) - 1;	
+	col = letterToNumber(rawCol);	
 	
 	//cout << row << " " << col << "\n";
 	
 	//Verify user input
-	if (row < 0 || row > size) {
+	if (row < 1 || row > size) {
 		cout << "Invalid row selected. Please enter a valid cell.\n";
 	}
-	if (col < 0 || col > size) {
+	if (col < 1 || col > size) {
 		cout << "Invalid column selected. Please enter a valid cell.\n";
 	}	
 	else if (flagMode == true){
@@ -308,8 +310,8 @@ void makeMove(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int si
 		//If it's the first move, use an 's' so that the mines can be set properly
 		if (firstMove) {
 			solnBoard[row][col] = 's';
-			setMine(gameBoard, solnBoard, BOARD_SIZE_VAR);
-			calcBoard(solnBoard, BOARD_SIZE_VAR);
+			setMine(gameBoard, solnBoard, size);
+			calcBoard(solnBoard, size);
 			gameBoard[row][col] = solnBoard[row][col];
 		}
 		else {
@@ -359,168 +361,39 @@ int verifyNumber(string numberIn)
 }
 
 //Check neighboring cells to calculate neighboring mines
-char numNeighboringMines(int row, int col, char solnBoard[][BOARD_SIZE], int size)
+char numNeighboringMines(int row, int col, char solnBoard[][22], int size)
 {
 	int closeMines = 0;
 
-	//Handle first row differently
-	if (row == 0) {
-		//Handle top-left corner differently
-		if (col == 0) {
-			if (solnBoard[row + 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row + 1][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col + 1] == 'x') {
-				closeMines++;
-			}
-		}
-		//Handle top-right corner differently
-		else if (col == size - 1) {
-			if (solnBoard[row + 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row + 1][col - 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col - 1] == 'x') {
-				closeMines++;
-			}
-		}
-		//Top row that's not corners
-		else {
-			if (solnBoard[row + 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row + 1][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row + 1][col - 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col - 1] == 'x') {
-				closeMines++;
-			}
-		}
+	if (solnBoard[row - 1][col - 1] == 'x') {
+		closeMines++;
 	}
-	//Handle bottom row
-	else if (row == size - 1) {
-		//Handle bottom-left corner
-		if (col == 0) {
-			if (solnBoard[row - 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row - 1][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col + 1] == 'x') {
-				closeMines++;
-			}
-		}
-		//Handle bottom-right corner
-		else if (col == size - 1) {
-			if (solnBoard[row - 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row - 1][col - 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col - 1] == 'x') {
-				closeMines++;
-			}
-		}
-		//Handle bottom row that's not corners
-		else {
-			if (solnBoard[row - 1][col] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row - 1][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row - 1][col - 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col + 1] == 'x') {
-				closeMines++;
-			}
-			if (solnBoard[row][col - 1] == 'x') {
-				closeMines++;
-			}
-		}
+	if (solnBoard[row - 1][col] == 'x') {
+		closeMines++;
 	}
-	//Handle left-hand column
-	else if (col == 0) {
-		if (solnBoard[row - 1][col] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row - 1][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col] == 'x') {
-			closeMines++;
-		}
+	if (solnBoard[row - 1][col + 1] == 'x') {
+		closeMines++;
 	}
-	//Handle right-hand column
-	else if (col == size - 1) {
-		if (solnBoard[row - 1][col] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row - 1][col - 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row][col - 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col - 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col] == 'x') {
-			closeMines++;
-		}
+	if (solnBoard[row][col + 1] == 'x') {
+		closeMines++;
 	}
-	//Handle middle cells
-	else {
-		if (solnBoard[row - 1][col - 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row - 1][col] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row - 1][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col + 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row + 1][col - 1] == 'x') {
-			closeMines++;
-		}
-		if (solnBoard[row][col - 1] == 'x') {
-			closeMines++;
-		}		
+	if (solnBoard[row + 1][col + 1] == 'x') {
+		closeMines++;
+	}
+	if (solnBoard[row + 1][col] == 'x') {
+		closeMines++;
+	}
+	if (solnBoard[row + 1][col - 1] == 'x') {
+		closeMines++;
+	}
+	if (solnBoard[row][col - 1] == 'x') {
+		closeMines++;
 	}
 
 	//Warning do not look at this
 	//Convert integer numbers to char numbers
 	switch (closeMines) {
-	case 0: 
+	case 0:
 		return '0';
 		break;
 	case 1:
@@ -551,10 +424,10 @@ char numNeighboringMines(int row, int col, char solnBoard[][BOARD_SIZE], int siz
 }
 
 //Check to see if game is over with a win
-bool checkWin(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size)
+bool checkWin(char gameBoard[][22], char solnBoard[][22], int size)
 {
-	for (int row = 0; row < size; row++) {
-		for (int col = 0; col < size; col++) {
+	for (int row = 1; row <= size; row++) {
+		for (int col = 1; col <= size; col++) {
 			//If the cell is not a mine, it must be uncovered
 			if (solnBoard[row][col] != 'x') {
 				if (gameBoard[row][col] == '?' || gameBoard[row][col] == 'f') {
@@ -568,10 +441,10 @@ bool checkWin(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int si
 }
 
 //Check to see if game is over with a loss
-bool checkLoss(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size)
+bool checkLoss(char gameBoard[][22], char solnBoard[][22], int size)
 {
-	for (int row = 0; row < size; row++) {
-		for (int col = 0; col < size; col++) {
+	for (int row = 1; row <= size; row++) {
+		for (int col = 1; col <= size; col++) {
 			//If a mine is uncovered, loss
 			if (gameBoard[row][col] == 'x') {
 				endGame(false);
@@ -583,280 +456,54 @@ bool checkLoss(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int s
 }
 
 //If a zero is uncovered, all adjacent squares must be uncovered
-void cascadeZeroes(char gameBoard[][BOARD_SIZE], char solnBoard[][BOARD_SIZE], int size, int row, int col)
+void cascadeZeroes(char gameBoard[][22], char solnBoard[][22], int size, int row, int col)
 {
-	//Top row
-	if (row == 0) {
-		//Top-left corner
-		if (col == 0) {
-			if (gameBoard[row + 1][col] == '?') {
-				gameBoard[row + 1][col] = solnBoard[row + 1][col];
-				if (solnBoard[row + 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-				}
-			}
-			
-			if (gameBoard[row + 1][col + 1] == '?') {
-				gameBoard[row + 1][col + 1] = solnBoard[row + 1][col + 1];
-				if (solnBoard[row + 1][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col + 1);
-				}
-			}
-			if (gameBoard[row][col + 1] == '?') {
-				gameBoard[row][col + 1] = solnBoard[row][col + 1];
-				if (solnBoard[row][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-				}
-			}
-		}
-		//Top-right corner
-		else if (col == size - 1) {
-			if (gameBoard[row + 1][col] == '?') {
-				gameBoard[row + 1][col] = solnBoard[row + 1][col];
-				if (solnBoard[row + 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-				}
-			}
-			if (gameBoard[row + 1][col - 1] == '?') {
-				gameBoard[row + 1][col - 1] = solnBoard[row + 1][col - 1];
-				if (solnBoard[row + 1][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col - 1);
-				}
-			}
-			if (gameBoard[row][col - 1] == '?') {
-				gameBoard[row][col - 1] = solnBoard[row][col - 1];
-				if (solnBoard[row][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-				}
-			}
-		}
-		//Top row not corners
-		else {
-			if (gameBoard[row + 1][col] == '?') {
-				gameBoard[row + 1][col] = solnBoard[row + 1][col];
-				if (solnBoard[row + 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-				}
-			}
-			if (gameBoard[row + 1][col + 1] == '?') {
-				gameBoard[row + 1][col + 1] = solnBoard[row + 1][col + 1];
-				if (solnBoard[row + 1][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col + 1);
-				}
-			}
-			if (gameBoard[row + 1][col - 1] == '?') {
-				gameBoard[row + 1][col - 1] = solnBoard[row + 1][col - 1];
-				if (solnBoard[row + 1][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row + 1, col - 1);
-				}
-			}
-			if (gameBoard[row][col + 1] == '?') {
-				gameBoard[row][col + 1] = solnBoard[row][col + 1];
-				if (solnBoard[row][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-				}
-			}
-			if (gameBoard[row][col - 1] == '?') {
-				gameBoard[row][col - 1] = solnBoard[row][col - 1];
-				if (solnBoard[row][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-				}
-			}
+	if (gameBoard[row - 1][col - 1] == '?') {
+		gameBoard[row - 1][col - 1] = solnBoard[row - 1][col - 1];
+		if (solnBoard[row - 1][col - 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row - 1, col - 1);
 		}
 	}
-	//Bottom row
-	else if (row == size - 1) {
-		//Bottom-left corner
-		if (col == 0) {
-			if (gameBoard[row - 1][col] == '?') {
-				gameBoard[row - 1][col] = solnBoard[row - 1][col];
-				if (solnBoard[row - 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-				}
-			}
-			if (gameBoard[row - 1][col + 1] == '?') {
-				gameBoard[row - 1][col + 1] = solnBoard[row - 1][col + 1];
-				if (solnBoard[row - 1][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col + 1);
-				}
-			}
-			if (gameBoard[row][col + 1] == '?') {
-				gameBoard[row][col + 1] = solnBoard[row][col + 1];
-				if (solnBoard[row][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-				}
-			}
-		}
-		//Bottom-right corner
-		else if (col == size - 1) {
-			if (gameBoard[row - 1][col] == '?') {
-				gameBoard[row - 1][col] = solnBoard[row - 1][col];
-				if (solnBoard[row - 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-				}
-			}
-			if (gameBoard[row - 1][col - 1] == '?') {
-				gameBoard[row - 1][col - 1] = solnBoard[row - 1][col - 1];
-				if (solnBoard[row - 1][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col - 1);
-				}
-			}
-			if (gameBoard[row][col - 1] == '?') {
-				gameBoard[row][col - 1] = solnBoard[row][col - 1];
-				if (solnBoard[row][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-				}
-			}
-		}
-		//Bottom row not corners
-		else {
-			if (gameBoard[row - 1][col] == '?') {
-				gameBoard[row - 1][col] = solnBoard[row - 1][col];
-				if (solnBoard[row - 1][col] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-				}
-			}
-			if (gameBoard[row - 1][col + 1] == '?') {
-				gameBoard[row - 1][col + 1] = solnBoard[row - 1][col + 1];
-				if (solnBoard[row - 1][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col + 1);
-				}
-			}
-			if (gameBoard[row - 1][col - 1] == '?') {
-				gameBoard[row - 1][col - 1] = solnBoard[row - 1][col - 1];
-				if (solnBoard[row - 1][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row - 1, col - 1);
-				}
-			}
-			if (gameBoard[row][col + 1] == '?') {
-				gameBoard[row][col + 1] = solnBoard[row][col + 1];
-				if (solnBoard[row][col + 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-				}
-			}
-			if (gameBoard[row][col - 1] == '?') {
-				gameBoard[row][col - 1] = solnBoard[row][col - 1];
-				if (solnBoard[row][col - 1] == '0') {
-					cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-				}
-			}
+	if (gameBoard[row - 1][col] == '?') {
+		gameBoard[row - 1][col] = solnBoard[row - 1][col];
+		if (solnBoard[row - 1][col] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
 		}
 	}
-	//Left-hand column
-	else if (col == 0) {
-		if (gameBoard[row - 1][col] == '?') {
-			gameBoard[row - 1][col] = solnBoard[row - 1][col];
-			if (solnBoard[row - 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-			}
-		}
-		if (gameBoard[row - 1][col + 1] == '?') {
-			gameBoard[row - 1][col + 1] = solnBoard[row - 1][col + 1];
-			if (solnBoard[row - 1][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col + 1);
-			}
-		}
-		if (gameBoard[row][col + 1] == '?') {
-			gameBoard[row][col + 1] = solnBoard[row][col + 1];
-			if (solnBoard[row][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-			}
-		}
-		if (gameBoard[row + 1][col + 1] == '?') {
-			gameBoard[row + 1][col + 1] = solnBoard[row + 1][col + 1];
-			if (solnBoard[row + 1][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col + 1);
-			}
-		}
-		if (gameBoard[row + 1][col] == '?') {
-			gameBoard[row + 1][col] = solnBoard[row + 1][col];
-			if (solnBoard[row + 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-			}
+	if (gameBoard[row - 1][col + 1] == '?') {
+		gameBoard[row - 1][col + 1] = solnBoard[row - 1][col + 1];
+		if (solnBoard[row - 1][col + 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row - 1, col + 1);
 		}
 	}
-	//Right-hand column
-	else if (col == size - 1) {
-		if (gameBoard[row - 1][col] == '?') {
-			gameBoard[row - 1][col] = solnBoard[row - 1][col];
-			if (solnBoard[row - 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-			}
-		}
-		if (gameBoard[row - 1][col - 1] == '?') {
-			gameBoard[row - 1][col - 1] = solnBoard[row - 1][col - 1];
-			if (solnBoard[row - 1][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col - 1);
-			}
-		}
-		if (gameBoard[row][col - 1] == '?') {
-			gameBoard[row][col - 1] = solnBoard[row][col - 1];
-			if (solnBoard[row][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-			}
-		}
-		if (gameBoard[row + 1][col - 1] == '?') {
-			gameBoard[row + 1][col - 1] = solnBoard[row + 1][col - 1];
-			if (solnBoard[row + 1][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col - 1);
-			}
-		}
-		if (gameBoard[row + 1][col] == '?') {
-			gameBoard[row + 1][col] = solnBoard[row + 1][col];
-			if (solnBoard[row + 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-			}
+	if (gameBoard[row][col + 1] == '?') {
+		gameBoard[row][col + 1] = solnBoard[row][col + 1];
+		if (solnBoard[row][col + 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
 		}
 	}
-	//Middle cells
-	else {
-		if (gameBoard[row - 1][col - 1] == '?') {
-			gameBoard[row - 1][col - 1] = solnBoard[row - 1][col - 1];
-			if (solnBoard[row - 1][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col - 1);
-			}
+	if (gameBoard[row + 1][col + 1] == '?') {
+		gameBoard[row + 1][col + 1] = solnBoard[row + 1][col + 1];
+		if (solnBoard[row + 1][col + 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row + 1, col + 1);
 		}
-		if (gameBoard[row - 1][col] == '?') {
-			gameBoard[row - 1][col] = solnBoard[row - 1][col];
-			if (solnBoard[row - 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col);
-			}
+	}
+	if (gameBoard[row + 1][col] == '?') {
+		gameBoard[row + 1][col] = solnBoard[row + 1][col];
+		if (solnBoard[row + 1][col] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
 		}
-		if (gameBoard[row - 1][col + 1] == '?') {
-			gameBoard[row - 1][col + 1] = solnBoard[row - 1][col + 1];
-			if (solnBoard[row - 1][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row - 1, col + 1);
-			}
+	}
+	if (gameBoard[row + 1][col - 1] == '?') {
+		gameBoard[row + 1][col - 1] = solnBoard[row + 1][col - 1];
+		if (solnBoard[row + 1][col - 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row + 1, col - 1);
 		}
-		if (gameBoard[row][col + 1] == '?') {
-			gameBoard[row][col + 1] = solnBoard[row][col + 1];
-			if (solnBoard[row][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row, col + 1);
-			}
-		}
-		if (gameBoard[row + 1][col + 1] == '?') {
-			gameBoard[row + 1][col + 1] = solnBoard[row + 1][col + 1];
-			if (solnBoard[row + 1][col + 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col + 1);
-			}
-		}
-		if (gameBoard[row + 1][col] == '?') {
-			gameBoard[row + 1][col] = solnBoard[row + 1][col];
-			if (solnBoard[row + 1][col] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col);
-			}
-		}
-		if (gameBoard[row + 1][col - 1] == '?') {
-			gameBoard[row + 1][col - 1] = solnBoard[row + 1][col - 1];
-			if (solnBoard[row + 1][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row + 1, col - 1);
-			}
-		}
-		if (gameBoard[row][col - 1] == '?') {
-			gameBoard[row][col - 1] = solnBoard[row][col - 1];
-			if (solnBoard[row][col - 1] == '0') {
-				cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
-			}
+	}
+	if (gameBoard[row][col - 1] == '?') {
+		gameBoard[row][col - 1] = solnBoard[row][col - 1];
+		if (solnBoard[row][col - 1] == '0') {
+			cascadeZeroes(gameBoard, solnBoard, size, row, col - 1);
 		}
 	}
 }
