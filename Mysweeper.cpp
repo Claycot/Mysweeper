@@ -62,8 +62,7 @@ int main()
 			break;
 		case 2: diffLev = setDiff();
 			break;
-		case 3: endGame(false);
-			return 0;
+		case 3: return 0;
 		}
 	}
 }
@@ -181,7 +180,16 @@ int drawMenu(string diffLev)
 	} while (rawInput != "1" && rawInput != "2" && rawInput != "3");
 
 	//Convert the verified user input string to an integer and return the selection.
-	trueInput = stoi(rawInput);
+	if (rawInput == "1"){
+		trueInput = 1;
+	} 
+	else if (rawInput == "2"){
+		trueInput = 2;
+	}
+	else if (rawInput == "3"){
+		trueInput = 3;
+	}
+	
 	return trueInput;
 }
 
@@ -237,7 +245,15 @@ string setDiff()
 	} while (rawInput != "1" && rawInput != "2" && rawInput != "3");
 
 	//Convert the verified user input string to an integer and return the selection.
-	trueInput = stoi(rawInput);
+	if (rawInput == "1"){
+		trueInput = 1;
+	} 
+	else if (rawInput == "2"){
+		trueInput = 2;
+	}
+	else if (rawInput == "3"){
+		trueInput = 3;
+	}
 	
 	switch (trueInput) {
 	case 1: return "Beginner";
